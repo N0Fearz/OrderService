@@ -9,17 +9,17 @@ namespace OrderService.Services;
 
 public class RabbitMQConsumer : BackgroundService
 {
-    private string _queueName;
-        private readonly string _routingKey = "create.organization"; // Replace with your routing key if needed
+        private readonly string _queueName = "organization-create-queue-order";
+        private readonly string _routingKey = "organization.create";
 
         private IConnection _connection;
         private IModel _channel;
         private readonly IConfiguration _configuration;
-        private IServiceProvider _serviceProvider;
+        private IServiceScopeFactory _serviceProvider;
 
-        public RabbitMQConsumer(IConfiguration configuration, IServiceProvider serviceProvider)
+        public RabbitMQConsumer(IConfiguration configuration, IServiceScopeFactory serviceScopeFactory)
         {
-            _serviceProvider = serviceProvider;
+            _serviceProvider = serviceScopeFactory;
             _configuration = configuration;
             InitRabbitMQ();
         }
@@ -37,13 +37,10 @@ public class RabbitMQConsumer : BackgroundService
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            // Declare a queue (optional for pre-declared queues like amq.topic)
-            _queueName = _channel.QueueDeclare().QueueName;
-
             // Bind to the topic exchange
-            _channel.QueueBind(queue: _queueName,
-                               exchange: "amq.topic",
-                               routingKey: _routingKey);
+            _channel.QueueDeclare(queue: _queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            _channel.QueueBind(_queueName, "amq.topic", _routingKey);
+            _channel.BasicQos(0, 1, false);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -67,19 +64,14 @@ public class RabbitMQConsumer : BackgroundService
             return Task.CompletedTask;
         }
 
-        private Task HandleMessageAsync(string message)
+        private async Task HandleMessageAsync(string message)
         {
             // Add your message processing logic here
             Console.WriteLine($"Received message: {message}");
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
-                
-                // Verwerk RabbitMQ-event
-                tenantContext.SetConnectionString(message);
-            }
-
-            return Task.CompletedTask;
+            using var scope = _serviceProvider.CreateScope();
+            
+            var migrationService = scope.ServiceProvider.GetRequiredService<IMigrationService>();
+            await migrationService.MigrateAsync(message);
         }
 
         private async void StopRabbitMQ()

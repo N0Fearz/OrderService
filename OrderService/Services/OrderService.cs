@@ -1,6 +1,6 @@
 ﻿namespace OrderService.Services;
 
-public class OrderService
+public class OrderService : IOrderService
 {
     
 }

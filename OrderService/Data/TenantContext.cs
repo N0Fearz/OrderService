@@ -14,7 +14,7 @@ public class TenantContext : ITenantContext
     public void SetConnectionString(string schemaName)
     {
         var connectionString = _configuration.GetConnectionString("ArticleDB");
-        var connectionStringWithSchema = $"{connectionString + schemaName};";
+        var connectionStringWithSchema = $"{connectionString}SearchPath={schemaName};";
         _connectionString = connectionStringWithSchema;
     }
 }

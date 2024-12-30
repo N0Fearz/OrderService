@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
 
 namespace OrderService.Services;
@@ -13,10 +15,26 @@ public class MigrationService : IMigrationService
         _configuration = configuration;
     }
 
+    public async Task AddSchemaAsync(string schemaName)
+    {
+        var connectionString = _configuration.GetConnectionString("ArticleDB");
+        var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
+        optionsBuilder.UseNpgsql(connectionString);
+        
+        using var scope = _serviceProvider.CreateScope();
+        var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+        tenantContext.SetConnectionString(connectionString);
+        var dbContext = new OrderDbContext(optionsBuilder.Options, scope.ServiceProvider.GetRequiredService<ITenantContext>());
+        var cmd = new StringBuilder().Append("CREATE SCHEMA IF NOT EXISTS ").Append(schemaName).ToString();
+        var formattableString = FormattableStringFactory.Create(cmd);
+        
+        await dbContext.Database.ExecuteSqlAsync(formattableString);
+    }
+    
     public async Task MigrateAsync(string schemaName)
     {
         var connectionString = _configuration.GetConnectionString("ArticleDB");
-        var connectionStringWithSchema = $"{connectionString+schemaName};";
+        var connectionStringWithSchema = $"{connectionString}SearchPath={schemaName};";
         var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
         optionsBuilder.UseNpgsql(connectionStringWithSchema);
         

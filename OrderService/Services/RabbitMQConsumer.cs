@@ -71,6 +71,8 @@ public class RabbitMQConsumer : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             
             var migrationService = scope.ServiceProvider.GetRequiredService<IMigrationService>();
+            await migrationService.AddSchemaAsync(message);
+            await Task.Delay((TimeSpan.FromSeconds(5)));
             await migrationService.MigrateAsync(message);
         }
 

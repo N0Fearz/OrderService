@@ -43,7 +43,6 @@ builder.Services.AddHostedService<RabbitMQConsumer>();
 builder.Services.AddSingleton<RabbitMqSenderOrganization>();
 builder.Services.AddEndpointsApiExplorer().AddSwagger();
 builder.Services.AddHttpContextAccessor();
-//var serviceProvider = builder.Services.BuildServiceProvider();
 
 builder.Services.AddDbContext<OrderDbContext>(opt =>
     opt.UseNpgsql(
@@ -55,7 +54,7 @@ builder.Services.AddDbContext<OrderDbContext>(opt =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins("http://localhost:3000")
+        policy => policy.WithOrigins("http://192.168.2.152:3000/")
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
@@ -79,5 +78,4 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.Run();
+await app.RunAsync();

@@ -24,21 +24,24 @@ namespace OrderService.Data
             modelBuilder.Entity<Order>().HasData(
             new Order
             {
-                OrderId = 1,
+                Id = 1,
                 OrderNumber = "132456",
                 Customer = "customer a",
+                ArticleIds = [1, 2, 3]
             },
             new Order
             {
-                OrderId = 2,
+                Id = 2,
                 OrderNumber = "789123",
                 Customer = "customer b",
+                ArticleIds = [2, 3]
             },
             new Order
             {
-                OrderId = 3,
+                Id = 3,
                 OrderNumber = "456789",
                 Customer = "customer c",
+                ArticleIds = [2]
             }
         );
         }

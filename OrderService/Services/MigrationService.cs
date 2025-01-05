@@ -17,7 +17,7 @@ public class MigrationService : IMigrationService
 
     public async Task AddSchemaAsync(string schemaName)
     {
-        var connectionString = _configuration.GetConnectionString("ArticleDB");
+        var connectionString = _configuration.GetConnectionString("OrderDB");
         var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
         optionsBuilder.UseNpgsql(connectionString);
         
@@ -33,7 +33,7 @@ public class MigrationService : IMigrationService
     
     public async Task MigrateAsync(string schemaName)
     {
-        var connectionString = _configuration.GetConnectionString("ArticleDB");
+        var connectionString = _configuration.GetConnectionString("OrderDB");
         var connectionStringWithSchema = $"{connectionString}SearchPath={schemaName};";
         var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
         optionsBuilder.UseNpgsql(connectionStringWithSchema);

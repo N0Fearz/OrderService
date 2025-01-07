@@ -1,4 +1,5 @@
-﻿using OrderService.Models;
+﻿using OrderService.DTO;
+using OrderService.Models;
 
 namespace OrderService.Repository
 {

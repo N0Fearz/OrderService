@@ -20,33 +20,40 @@ public class MigrationService : IMigrationService
         var connectionString = _configuration.GetConnectionString("OrderDB");
         var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
         optionsBuilder.UseNpgsql(connectionString);
+
+
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+            tenantContext.SetConnectionString(connectionString);
+            var dbContext = new OrderDbContext(optionsBuilder.Options, scope.ServiceProvider.GetRequiredService<ITenantContext>());
+            var cmd = new StringBuilder().Append("CREATE SCHEMA IF NOT EXISTS ").Append(schemaName).ToString();
+            var formattableString = FormattableStringFactory.Create(cmd);
         
-        using var scope = _serviceProvider.CreateScope();
-        var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
-        tenantContext.SetConnectionString(connectionString);
-        var dbContext = new OrderDbContext(optionsBuilder.Options, scope.ServiceProvider.GetRequiredService<ITenantContext>());
-        var cmd = new StringBuilder().Append("CREATE SCHEMA IF NOT EXISTS ").Append(schemaName).ToString();
-        var formattableString = FormattableStringFactory.Create(cmd);
-        
-        await dbContext.Database.ExecuteSqlAsync(formattableString);
+            await dbContext.Database.ExecuteSqlAsync(formattableString);
+        }
     }
     
     public async Task MigrateAsync(string schemaName)
     {
+        Task.Delay(TimeSpan.FromSeconds(10)).Wait();
+        Console.WriteLine(schemaName);
         var connectionString = _configuration.GetConnectionString("OrderDB");
         var connectionStringWithSchema = $"{connectionString}SearchPath={schemaName};";
         var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
         optionsBuilder.UseNpgsql(connectionStringWithSchema);
-        
-        using var scope = _serviceProvider.CreateScope();
-        var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
-        tenantContext.SetConnectionString(connectionStringWithSchema);
-        var dbContext = new OrderDbContext(optionsBuilder.Options, scope.ServiceProvider.GetRequiredService<ITenantContext>());
 
-        // Check if the migrations are needed
-        if (await dbContext.Database.GetPendingMigrationsAsync() is { } migrations && migrations.Any())
+        using (var scope = _serviceProvider.CreateScope())
         {
-            await dbContext.Database.MigrateAsync();
+            var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+            tenantContext.SetConnectionString(connectionStringWithSchema);
+            var dbContext = new OrderDbContext(optionsBuilder.Options, scope.ServiceProvider.GetRequiredService<ITenantContext>());
+
+            // Check if the migrations are needed
+            if (await dbContext.Database.GetPendingMigrationsAsync() is { } migrations && migrations.Any())
+            {
+                await dbContext.Database.MigrateAsync();
+            }
         }
     }
 }

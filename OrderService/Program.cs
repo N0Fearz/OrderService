@@ -48,13 +48,13 @@ builder.Services.AddDbContext<OrderDbContext>(opt =>
     opt.UseNpgsql(
         builder.Configuration.GetConnectionString("OrderDB"),
         o => o
-            .SetPostgresVersion(17, 0)));
+            .SetPostgresVersion(16, 4)));
 
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins("http://192.168.2.152:3000/")
+        policy => policy.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
@@ -67,12 +67,9 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 app.UseCors("AllowFrontend");
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
 
+app.UseSwagger();
+app.UseSwaggerUI(options => options.EnableTryItOutByDefault());
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

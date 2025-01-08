@@ -15,7 +15,7 @@ public class RabbitMQConsumer : BackgroundService
         private IConnection _connection;
         private IModel _channel;
         private readonly IConfiguration _configuration;
-        private IServiceScopeFactory _serviceProvider;
+        private readonly IServiceScopeFactory _serviceProvider;
 
         public RabbitMQConsumer(IConfiguration configuration, IServiceScopeFactory serviceScopeFactory)
         {
@@ -72,11 +72,11 @@ public class RabbitMQConsumer : BackgroundService
             
             var migrationService = scope.ServiceProvider.GetRequiredService<IMigrationService>();
             await migrationService.AddSchemaAsync(message);
-            await Task.Delay((TimeSpan.FromSeconds(5)));
+            
             await migrationService.MigrateAsync(message);
         }
 
-        private async void StopRabbitMQ()
+        private void StopRabbitMQ()
         {
             _channel?.Close();
             _connection?.Close();

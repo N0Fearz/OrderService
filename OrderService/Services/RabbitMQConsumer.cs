@@ -12,8 +12,8 @@ public class RabbitMQConsumer : BackgroundService
         private readonly string _queueName = "organization-create-queue-order";
         private readonly string _routingKey = "organization.create";
 
-        private IConnection _connection;
-        private IModel _channel;
+        private readonly IConnection _connection;
+        private readonly IModel _channel;
         private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _serviceProvider;
 
@@ -21,11 +21,7 @@ public class RabbitMQConsumer : BackgroundService
         {
             _serviceProvider = serviceScopeFactory;
             _configuration = configuration;
-            InitRabbitMQ();
-        }
-
-        private void InitRabbitMQ()
-        {
+            
             var factory = new ConnectionFactory
             {
                 HostName = _configuration["RabbitMQ:HostName"],
@@ -45,7 +41,7 @@ public class RabbitMQConsumer : BackgroundService
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            stoppingToken.Register(() => StopRabbitMQ());
+            stoppingToken.Register(StopRabbitMQ);
 
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += async (model, ea) =>

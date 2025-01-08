@@ -40,6 +40,7 @@ builder.Services.AddScoped<IMigrationService, MigrationService>();
 builder.Services.AddSingleton<ITenantContext, TenantContext>();
 builder.Services.AddSingleton<IOrderService, OrderService.Services.OrderService>();
 builder.Services.AddHostedService<RabbitMQConsumer>();
+builder.Services.AddHostedService<RabbitMqConsumeDeleteOrganization>();
 builder.Services.AddSingleton<RabbitMqSenderOrganization>();
 builder.Services.AddEndpointsApiExplorer().AddSwagger();
 builder.Services.AddHttpContextAccessor();

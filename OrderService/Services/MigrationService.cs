@@ -33,11 +33,9 @@ public class MigrationService : IMigrationService
             await dbContext.Database.ExecuteSqlAsync(formattableString);
         }
     }
-    
+
     public async Task MigrateAsync(string schemaName)
     {
-        Task.Delay(TimeSpan.FromSeconds(10)).Wait();
-        Console.WriteLine(schemaName);
         var connectionString = _configuration.GetConnectionString("OrderDB");
         var connectionStringWithSchema = $"{connectionString}SearchPath={schemaName};";
         var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
@@ -54,6 +52,26 @@ public class MigrationService : IMigrationService
             {
                 await dbContext.Database.MigrateAsync();
             }
+        }
+    }
+    
+    public async Task RemoveSchemaAsync(string schemaName)
+    {
+        var connectionString = _configuration.GetConnectionString("OrderDB");
+        var optionsBuilder = new DbContextOptionsBuilder<OrderDbContext>();
+        optionsBuilder.UseNpgsql(connectionString);
+
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var tenantContext = scope.ServiceProvider.GetRequiredService<ITenantContext>();
+            tenantContext.SetConnectionString(connectionString);
+            var dbContext = new OrderDbContext(optionsBuilder.Options, scope.ServiceProvider.GetRequiredService<ITenantContext>());
+        
+            // Query to drop the schema
+            var cmd = new StringBuilder().Append("DROP SCHEMA IF EXISTS ").Append(schemaName).Append(" CASCADE").ToString();
+            var formattableString = FormattableStringFactory.Create(cmd);
+
+            await dbContext.Database.ExecuteSqlAsync(formattableString);
         }
     }
 }

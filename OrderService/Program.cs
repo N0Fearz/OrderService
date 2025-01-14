@@ -42,6 +42,7 @@ builder.Services.AddSingleton<IOrderService, OrderService.Services.OrderService>
 builder.Services.AddHostedService<RabbitMQConsumer>();
 builder.Services.AddHostedService<RabbitMqConsumeDeleteOrganization>();
 builder.Services.AddSingleton<RabbitMqSenderOrganization>();
+builder.Services.AddSingleton<ILogPublisher, LogPublisher>();
 builder.Services.AddEndpointsApiExplorer().AddSwagger();
 builder.Services.AddHttpContextAccessor();
 

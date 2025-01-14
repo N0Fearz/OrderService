@@ -17,12 +17,14 @@ namespace OrderService.Controllers
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderService _orderService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogPublisher _logPublisher;
 
-        public OrderController(IOrderRepository orderRepository, IHttpContextAccessor httpContextAccessor, IOrderService orderService)
+        public OrderController(IOrderRepository orderRepository, IHttpContextAccessor httpContextAccessor, IOrderService orderService, ILogPublisher logPublisher)
         {
             _orderRepository = orderRepository;
             _httpContextAccessor = httpContextAccessor;
             _orderService = orderService;
+            _logPublisher = logPublisher;
         }
 
         [HttpGet]
@@ -63,6 +65,17 @@ namespace OrderService.Controllers
             order.ArticleIds = dto.ArticleIds;
             
             _orderRepository.UpdateOrder(order);
+            _logPublisher.SendMessage(new LogMessage
+            {
+                ServiceName = "OrderService",
+                LogLevel = "Information",
+                Message = "Order updated successfully.",
+                Timestamp = DateTime.Now,
+                Metadata = new Dictionary<string, string>
+                {
+                    { "OrderArticles", dto.ArticleIds.Count().ToString() }
+                }
+            });
             return Ok(order);
         }
         
@@ -81,6 +94,17 @@ namespace OrderService.Controllers
             _orderService.SetConnectionString(schemaName);
             
             _orderRepository.UpdateOrder(order);
+            _logPublisher.SendMessage(new LogMessage
+            {
+                ServiceName = "OrderService",
+                LogLevel = "Information",
+                Message = "Order updated successfully.",
+                Timestamp = DateTime.Now,
+                Metadata = new Dictionary<string, string>
+                {
+                    { "OrderNumber", order.OrderNumber }
+                }
+            });
             return Ok(order);
         }
         
@@ -99,6 +123,17 @@ namespace OrderService.Controllers
 
             order.Id = 0;
             _orderRepository.InsertOrder(order);
+            _logPublisher.SendMessage(new LogMessage
+            {
+                ServiceName = "OrderService",
+                LogLevel = "Information",
+                Message = "Order created successfully.",
+                Timestamp = DateTime.Now,
+                Metadata = new Dictionary<string, string>
+                {
+                    { "OrderNumber", order.OrderNumber }
+                }
+            });
             return Ok(order);
         }
         
@@ -116,6 +151,17 @@ namespace OrderService.Controllers
             _orderService.SetConnectionString(schemaName);
             
             _orderRepository.DeleteOrderById(orderId);
+            _logPublisher.SendMessage(new LogMessage
+            {
+                ServiceName = "OrderService",
+                LogLevel = "Information",
+                Message = "Order deleted successfully.",
+                Timestamp = DateTime.Now,
+                Metadata = new Dictionary<string, string>
+                {
+                    { "OrderNumber", orderId.ToString() }
+                }
+            });
             return Ok();
         }
     }

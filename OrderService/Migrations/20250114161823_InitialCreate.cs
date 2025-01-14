@@ -19,9 +19,9 @@ namespace OrderService.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    OrderNumber = table.Column<string>(type: "text", nullable: false),
-                    Customer = table.Column<string>(type: "text", nullable: false),
-                    ArticleIds = table.Column<int[]>(type: "integer[]", nullable: false)
+                    OrderNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Customer = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ArticleIds = table.Column<int[]>(type: "integer[]", nullable: true)
                 },
                 constraints: table =>
                 {

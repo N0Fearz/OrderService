@@ -21,6 +21,17 @@ namespace OrderService.Data
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.Property(o => o.OrderNumber)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(o => o.Customer)
+                    .IsRequired()
+                    .HasMaxLength(100);
+            });
+            
             modelBuilder.Entity<Order>().HasData(
             new Order
             {

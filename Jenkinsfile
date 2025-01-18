@@ -5,9 +5,9 @@ pipeline {
   }
   environment {
       DOTNET_SYSTEM_GLOBALIZATION_INVARIANT = "true"
-      PATH = "${env.HOME}/.dotnet/tools:${env.PATH}" // Voeg ~/.dotnet/tools toe aan het PATH
-      DOCKER_IMAGE = "casgoorman/orderservice" // Pas aan naar jouw image
-      DOCKER_TAG = "latest" // Of gebruik bijv. BUILD_NUMBER voor een unieke tag
+      PATH = "${env.HOME}/.dotnet/tools:${env.PATH}"
+      DOCKER_IMAGE = "casgoorman/orderservice"
+      DOCKER_TAG = "latest"
   }
   stages{
     stage('Clean and checkout'){

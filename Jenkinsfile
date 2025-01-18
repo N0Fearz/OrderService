@@ -42,12 +42,18 @@ pipeline {
         }
     }
     stage('SonarQube Analysis') {
+        environment {
+          SONAR_TOKEN = credentials('sonar-token') // Gebruik de juiste credential ID in Jenkins
+        }
         steps {
           withSonarQubeEnv('SonarQube') { // Naam van de SonarQube server zoals ingesteld in Jenkins
             sh '''
-            dotnet sonarscanner begin /k:"OrderService"
+            dotnet sonarscanner begin \
+              /k:"n0fearz_OrderService" \
+              /o:"n0fearz" \
+              /d:sonar.login="$SONAR_TOKEN"
             dotnet build --configuration Release
-            dotnet sonarscanner end
+            dotnet sonarscanner end /d:sonar.login="$SONAR_TOKEN"
             '''
         }
       }
@@ -84,5 +90,13 @@ pipeline {
         }
     }
     
-  } 
+  }
+    post {
+        success {
+            build job: 'IntegrationTest', wait: false, parameters: [
+                string(name: 'TRIGGER_SERVICE', value: 'OrderService'),
+                string(name: 'BUILD_NUMBER', value: 'latest')
+            ]
+        }
+    }  
 }
